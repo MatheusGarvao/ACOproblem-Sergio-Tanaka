@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACO TSP Solver</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Adicionando Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+</head>
+<body>
+    <div id="app">
+        <h1>ACO TSP Solver</h1>
+
+        <select id="problemInstance">
+            <option value="dj38.tsp">Djibouti (dj38)</option>
+            <option value="d198.tsp">Omã (d198)</option>
+            <option value="lin318.tsp">Luxemburgo (lin318)</option>
+        </select>
+        <button id="loadInstance">Carregar Instância</button>
+        <button id="runACO" disabled>Executar ACO</button>
+        <button id="runACOWithSolution" disabled>Executar ACO com Solução Inicial</button>
+
+        <div>
+            <label for="initialSolution">Carregar Solução Inicial (JSON):</label>
+            <input type="text" id="initialSolution" placeholder='Ex: [1, 2, 3, 4, 5]' />
+        </div>
+
+        <button id="viewGraph" disabled>Visualizar Grafo</button>
+        <button id="viewBestRoute" disabled>Visualizar Melhor Rota</button>
+
+        <div id="log"></div>
+        <div id="iterations"></div>
+
+        <!-- Div para renderizar os gráficos -->
+        <div id="graphContainer" style="margin-top: 20px;">
+            <h3>Gráfico do Problema</h3>
+            <div id="canvas" style="width: 100%; height: 600px;"></div>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
