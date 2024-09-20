@@ -55,7 +55,15 @@ def escolher_proxima_cidade(cidade_atual, cidades_nao_visitadas, feromonio, coor
         valor = (feromonio_atual ** alfa) * (heuristica ** beta)
         somatorio += valor
         probabilidades.append((cidade, valor))
-    probabilidades = [(cidade, valor / somatorio) for cidade, valor in probabilidades]
+
+    # Verificar se o somatório é zero
+    if somatorio == 0:
+        # Probabilidade uniforme entre as cidades restantes
+        probabilidades = [(cidade, 1.0 / len(cidades_nao_visitadas)) for cidade in cidades_nao_visitadas]
+    else:
+        probabilidades = [(cidade, valor / somatorio) for cidade, valor in probabilidades]
+
+    # Escolher a próxima cidade
     proxima_cidade = random.choices([cidade for cidade, _ in probabilidades], weights=[p for _, p in probabilidades])[0]
     return proxima_cidade
 
