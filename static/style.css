@@ -1,3 +1,4 @@
+/* Estilo existente */
 body {
     font-family: 'Roboto', sans-serif;
     background-color: #f4f4f9;
@@ -6,7 +7,6 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-
     color: #333;
 }
 
@@ -27,12 +27,28 @@ h1 {
     color: #4CAF50;
 }
 
-select, input[type="text"] {
+/* Melhorias para os inputs e layout */
+select, input[type="number"], input[type="text"] {
     width: 100%;
     padding: 10px;
     margin: 10px 0;
     border-radius: 5px;
     border: 1px solid #ccc;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+label {
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 5px;
+    display: block;
+}
+
+input[type="number"], input[type="text"] {
+    display: block;
+    width: calc(100% - 20px);
+    margin-bottom: 20px;
 }
 
 button {
@@ -55,6 +71,38 @@ button:hover {
     background-color: #45a049;
 }
 
+/* Estilo para a seção de parâmetros */
+#parameters {
+    margin-top: 20px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 10px;
+}
+
+#parameters h3 {
+    font-size: 18px;
+    color: #4CAF50;
+    margin-bottom: 10px;
+}
+
+#parameters div {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+#parameters label {
+    width: 100%;
+    margin-bottom: 5px;
+}
+
+#parameters input {
+    width: calc(50% - 10px); /* Para inputs lado a lado */
+    margin-bottom: 15px;
+}
+
+/* Caixa de log e iterações */
 #log, #iterations {
     background-color: #e9e9e9;
     padding: 10px;
@@ -62,6 +110,8 @@ button:hover {
     border-radius: 5px;
     height: 100px;
     overflow-y: auto;
+    font-size: 14px;
+    color: #555;
 }
 
 #canvas {
@@ -69,4 +119,14 @@ button:hover {
     text-align: center;
     width: 100%;
     height: 600px;
+}
+.description {
+    font-size: 14px;
+    color: #666;
+    margin-top: -10px;
+    margin-bottom: 20px;
+}
+
+.description strong {
+    color: #4CAF50;
 }

@@ -13,12 +13,26 @@ document.getElementById('loadInstance').addEventListener('click', function () {
     });
 });
 
+function getParameters() {
+    return {
+        alpha: parseFloat(document.getElementById('alpha').value),
+        beta: parseFloat(document.getElementById('beta').value),
+        evaporation: parseFloat(document.getElementById('evaporation').value),
+        Q: parseFloat(document.getElementById('Q').value),
+        numAnts: parseInt(document.getElementById('numAnts').value),
+        numIterations: parseInt(document.getElementById('numIterations').value)
+    };
+}
+
 // Executar ACO
 document.getElementById('runACO').addEventListener('click', function () {
+     const params = getParameters();
+
     logMessage("Rodando algoritmo em tempo real...");
 
-    // Conectar ao endpoint SSE
-    const eventSource = new EventSource('/run_aco_sse');
+    const queryString = new URLSearchParams(params).toString();
+
+    const eventSource = new EventSource(`/run_aco_sse?${queryString}`);
 
     // Receber as mensagens do servidor (iterações e fitness)
 eventSource.onmessage = function(event) {
@@ -51,8 +65,9 @@ eventSource.onmessage = function(event) {
 });
 
 
+
 document.getElementById('runACOWithSolution').addEventListener('click', function () {
-  document.getElementById('runACOWithSolution').addEventListener('click', function () {
+    const params = getParameters();
     const solution = document.getElementById('initialSolution').value;
 
     if (!solution) {
@@ -62,7 +77,7 @@ document.getElementById('runACOWithSolution').addEventListener('click', function
 
     let parsedSolution;
     try {
-        parsedSolution = JSON.parse(solution);  // Tenta converter o valor para JSON
+        parsedSolution = JSON.parse(solution);
     } catch (error) {
         logMessage("Formato de solução inicial inválido. Use um array JSON.");
         return;
@@ -70,8 +85,10 @@ document.getElementById('runACOWithSolution').addEventListener('click', function
 
     logMessage("Rodando algoritmo em tempo real com solução inicial...");
 
-    // Conectar ao endpoint SSE
-    const eventSource = new EventSource(`/run_aco_with_solution_sse?solution=${encodeURIComponent(solution)}`);
+    params.solution = JSON.stringify(parsedSolution);
+    const queryString = new URLSearchParams(params).toString();
+
+    const eventSource = new EventSource(`/run_aco_with_solution_sse?${queryString}`);
 
     // Receber as mensagens do servidor (iterações e fitness)
 eventSource.onmessage = function(event) {
@@ -100,7 +117,7 @@ eventSource.onmessage = function(event) {
     };
 });
 
-});
+
 
 
 
