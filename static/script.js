@@ -10,6 +10,7 @@ document.getElementById('loadInstance').addEventListener('click', function () {
         document.getElementById('runACO').disabled = false;
         document.getElementById('runACOWithSolution').disabled = false;
         document.getElementById('viewGraph').disabled = false;
+        document.getElementById('runMultipleACO').disabled = false; // Enable multiple ACO button after instance loads
     });
 });
 
@@ -26,98 +27,69 @@ function getParameters() {
 
 // Executar ACO
 document.getElementById('runACO').addEventListener('click', function () {
-     const params = getParameters();
-
+    const params = getParameters();
     logMessage("Rodando algoritmo em tempo real...");
-
     const queryString = new URLSearchParams(params).toString();
-
     const eventSource = new EventSource(`/run_aco_sse?${queryString}`);
 
-    // Receber as mensagens do servidor (iterações e fitness)
-eventSource.onmessage = function(event) {
-    const data = JSON.parse(event.data);
+    eventSource.onmessage = function (event) {
+        const data = JSON.parse(event.data);
+        if (data.iteracao && data.fitness) {
+            const iterationsDiv = document.getElementById('iterations');
+            iterationsDiv.innerHTML += `Iteração: ${data.iteracao}, Fitness: ${data.fitness}<br>`;
+        }
 
-    if (data.iteracao && data.fitness) {
-        const iterationsDiv = document.getElementById('iterations');
-        iterationsDiv.innerHTML += `Iteração: ${data.iteracao}, Fitness: ${data.fitness}<br>`;
-    }
+        if (data.final) {
+            logMessage(data.mensagem);
+            logMessage("Melhor solução encontrada: " + JSON.stringify(data.melhor_rota));
+            document.getElementById('viewBestRoute').disabled = false;
+            document.getElementById('plotBoxplot').disabled = false; // Enable boxplot button
+            document.getElementById('plotFitnessEvolution').disabled = false; // Enable fitness evolution button
+            eventSource.close();
+        }
+    };
 
-    if (data.final) {
-        logMessage(data.mensagem);  // Exibe a mensagem de conclusão
-        logMessage("Melhor solução encontrada: " + JSON.stringify(data.melhor_rota));  // Exibe a melhor rota
-
-        // Habilita o botão para visualizar a melhor rota
-        document.getElementById('viewBestRoute').disabled = false;
-
-        eventSource.close();  // Fechar SSE quando o processo terminar
-    }
-};
-
-
-
-
-
-    eventSource.onerror = function() {
+    eventSource.onerror = function () {
         logMessage("Erro na execução em tempo real.");
         eventSource.close();
     };
 });
+// Executar múltiplos ACOs e visualizar logs e boxplot em tempo real
+document.getElementById('runMultipleACO').addEventListener('click', function () {
+    logMessage("Executando múltiplos ACOs em tempo real...");
 
-
-
-document.getElementById('runACOWithSolution').addEventListener('click', function () {
     const params = getParameters();
-    const solution = document.getElementById('initialSolution').value;
-
-    if (!solution) {
-        logMessage("Por favor, insira uma solução inicial.");
-        return;
-    }
-
-    let parsedSolution;
-    try {
-        parsedSolution = JSON.parse(solution);
-    } catch (error) {
-        logMessage("Formato de solução inicial inválido. Use um array JSON.");
-        return;
-    }
-
-    logMessage("Rodando algoritmo em tempo real com solução inicial...");
-
-    params.solution = JSON.stringify(parsedSolution);
     const queryString = new URLSearchParams(params).toString();
+    const eventSource = new EventSource(`/run_multiple_aco?${queryString}`);
 
-    const eventSource = new EventSource(`/run_aco_with_solution_sse?${queryString}`);
+    eventSource.onmessage = function (event) {
+        const data = JSON.parse(event.data);
 
-    // Receber as mensagens do servidor (iterações e fitness)
-eventSource.onmessage = function(event) {
-    const data = JSON.parse(event.data);
+        // Log each run's result
+        if (data.run && data.iterations) {
+            logMessage(`Execução: ${data.run}, Iterações: ${data.iterations}`);
+        }
 
-    if (data.iteracao && data.fitness) {
-        const iterationsDiv = document.getElementById('iterations');
-        iterationsDiv.innerHTML += `Iteração: ${data.iteracao}, Fitness: ${data.fitness}<br>`;
-    }
+        // Display the boxplot when the process is complete
+        if (data.final) {
+            logMessage(data.message);
 
-    if (data.final) {
-        logMessage(data.mensagem);  // Exibe a mensagem de conclusão
-        logMessage("Melhor solução encontrada: " + JSON.stringify(data.melhor_rota));  // Exibe a melhor rota
+            // Render the boxplot image
+            const img = new Image();
+            img.src = data.boxplot_url;
+            const canvas = document.getElementById('canvas');
+            canvas.innerHTML = '';  // Clear previous content
+            canvas.appendChild(img);  // Add the new boxplot image
 
-        // Habilita o botão para visualizar a melhor rota
-        document.getElementById('viewBestRoute').disabled = false;
+            eventSource.close();  // Close the SSE connection
+        }
+    };
 
-        eventSource.close();  // Fechar SSE quando o processo terminar
-    }
-};
-
-
-    eventSource.onerror = function() {
-        logMessage("Erro na execução em tempo real com solução inicial.");
+    eventSource.onerror = function () {
+        logMessage("Erro na execução múltipla em tempo real.");
         eventSource.close();
     };
 });
-
-
 
 
 
@@ -125,28 +97,58 @@ eventSource.onmessage = function(event) {
 // Visualizar Grafo
 document.getElementById('viewGraph').addEventListener('click', function () {
     fetch('/get_graph')
-    .then(response => response.json())
-    .then(data => {
-        const canvas = document.getElementById('canvas');
-        Plotly.newPlot(canvas, [data.edge_trace, data.node_trace], data.layout);
-    }).catch(error => {
-        console.error('Error loading graph:', error);
-    });
+        .then(response => response.json())
+        .then(data => {
+            const canvas = document.getElementById('canvas');
+            Plotly.newPlot(canvas, [data.edge_trace, data.node_trace], data.layout);
+        }).catch(error => {
+            console.error('Error loading graph:', error);
+        });
 });
-
 
 // Visualizar Melhor Rota
 document.getElementById('viewBestRoute').addEventListener('click', function () {
     fetch('/get_best_route')
-    .then(response => response.json())
-    .then(data => {
-        const canvas = document.getElementById('canvas');
-        Plotly.newPlot(canvas, [data.edge_trace, data.node_trace], data.layout);
-    }).catch(error => {
-        console.error('Error loading best route:', error);
-    });
+        .then(response => response.json())
+        .then(data => {
+            const canvas = document.getElementById('canvas');
+            Plotly.newPlot(canvas, [data.edge_trace, data.node_trace], data.layout);
+        }).catch(error => {
+            console.error('Error loading best route:', error);
+        });
 });
 
+// Visualizar Boxplot de Iterações
+document.getElementById('plotBoxplot').addEventListener('click', function () {
+    fetch('/plot_iterations_boxplot')
+        .then(response => response.blob())
+        .then(blob => {
+            const imgUrl = URL.createObjectURL(blob);
+            const img = new Image();
+            img.src = imgUrl;
+            const canvas = document.getElementById('canvas');
+            canvas.innerHTML = ''; // Limpar canvas
+            canvas.appendChild(img); // Adicionar imagem do boxplot
+        }).catch(error => {
+            console.error('Erro ao carregar boxplot:', error);
+        });
+});
+
+// Visualizar Evolução do Fitness
+document.getElementById('plotFitnessEvolution').addEventListener('click', function () {
+    fetch('/plot_fitness_evolution')
+        .then(response => response.blob())
+        .then(blob => {
+            const imgUrl = URL.createObjectURL(blob);
+            const img = new Image();
+            img.src = imgUrl;
+            const canvas = document.getElementById('canvas');
+            canvas.innerHTML = ''; // Limpar canvas
+            canvas.appendChild(img); // Adicionar imagem da evolução do fitness
+        }).catch(error => {
+            console.error('Erro ao carregar evolução do fitness:', error);
+        });
+});
 
 function logMessage(message) {
     const logDiv = document.getElementById('log');
