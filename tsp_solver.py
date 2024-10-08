@@ -129,7 +129,7 @@ def atualizar_feromonios(feromonio, todas_rotas, todas_distancias, evaporacao, Q
             feromonio[edge] += Q / distancia
     return feromonio
 
-#função usada para gerar o grafo, realmente essa eu fiz com chatgpt puro.
+#função usada para gerar o grafo
 def visualizar_grafo_json(G, problem):
     pos = {i: (problem.node_coords[i][0], problem.node_coords[i][1]) for i in G.nodes}
     edges = list(G.edges)
