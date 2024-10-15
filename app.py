@@ -1,4 +1,5 @@
 from flask import Flask, render_template, jsonify, request, Response, send_file
+import matplotlib
 import matplotlib.pyplot as plt
 import io
 import time
@@ -7,6 +8,7 @@ import base64
 from tsp_solver import carregar_problema, algoritmo_colonia_formigas_sse, visualizar_grafo_json, \
     visualizar_melhor_rota_json
 
+matplotlib.use('Agg')
 app = Flask(__name__)
 
 # Variables for problem and solution data
